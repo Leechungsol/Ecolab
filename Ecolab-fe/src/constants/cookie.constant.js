@@ -1,0 +1,4 @@
+export const COOKIE = {
+  USER_INFO: "USER_INFO",
+  ACCESS_TOKEN: "ACCESS_TOKEN",
+};

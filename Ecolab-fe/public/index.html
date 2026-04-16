@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="icon" href="<%= BASE_URL %>favicon.ico" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap" rel="stylesheet" />
+
+    <link rel="dx-theme" data-theme="generic.light" href="<%= BASE_URL %>css/light.css" data-active="true" />
+    <link rel="dx-theme" data-theme="generic.dark" href="<%= BASE_URL %>css/dark.css" data-active="false" />
+    <link rel="dx-theme" data-theme="generic.carmine" href="<%= BASE_URL %>css/carmine.css" data-active="false" />
+    <link rel="dx-theme" data-theme="generic.softblue" href="<%= BASE_URL %>css/softblue.css" data-active="false" />
+    <link rel="dx-theme" data-theme="generic.darkmoon" href="<%= BASE_URL %>css/darkmoon.css" data-active="false" />
+    <link rel="dx-theme" data-theme="generic.darkviolet" href="<%= BASE_URL %>css/darkviolet.css" data-active="false" />
+    <link rel="dx-theme" data-theme="generic.greenmist" href="<%= BASE_URL %>css/greenmist.css" data-active="false" />
+    <link rel="dx-theme" data-theme="generic.contrast" href="<%= BASE_URL %>css/contrast.css" data-active="false" />
+    
+    <script defer src="https://use.fontawesome.com/releases/v5.15.4/js/all.js" integrity="sha384-rOA1PnstxnOBLzCLMcre8ybwbTmemjzdNlILg8O7z1lUkLXozs4DHonlDtnE7fpc" crossorigin="anonymous"></script>
+    <title><%= htmlWebpackPlugin.options.title %></title>
+  </head>
+  <body class="dx-viewport">
+    <noscript>
+      <strong
+        >We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work
+        properly without JavaScript enabled. Please enable it to
+        continue.</strong
+      >
+    </noscript>
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
+  </body>
+</html>

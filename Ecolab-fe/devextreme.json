@@ -1,0 +1,67 @@
+{
+  "applicationEngine": "vue",
+  "vue": {
+    "version": 3,
+    "template": "javascript"
+  },
+  "build": {
+    "commands": [
+      {
+        "command": "build-theme",
+        "options": {
+          "inputFile": "src/themes/dark.json",
+          "outputFile": "public/css/dark.css"
+        }
+      },
+      {
+        "command": "build-theme",
+        "options": {
+          "inputFile": "src/themes/light.json",
+          "outputFile": "public/css/light.css"
+        }
+      },
+      {
+        "command": "build-theme",
+        "options": {
+          "inputFile": "src/themes/carmine.json",
+          "outputFile": "public/css/carmine.css"
+        }
+      },
+      {
+        "command": "build-theme",
+        "options": {
+          "inputFile": "src/themes/softblue.json",
+          "outputFile": "public/css/softblue.css"
+        }
+      },
+      {
+        "command": "build-theme",
+        "options": {
+          "inputFile": "src/themes/darkmoon.json",
+          "outputFile": "public/css/darkmoon.css"
+        }
+      },
+      {
+        "command": "build-theme",
+        "options": {
+          "inputFile": "src/themes/darkviolet.json",
+          "outputFile": "public/css/darkviolet.css"
+        }
+      },
+      {
+        "command": "build-theme",
+        "options": {
+          "inputFile": "src/themes/greenmist.json",
+          "outputFile": "public/css/greenmist.css"
+        }
+      },
+      {
+        "command": "build-theme",
+        "options": {
+          "inputFile": "src/themes/contrast.json",
+          "outputFile": "public/css/contrast.css"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "baseTheme": "generic.carmine",
+  "assetsBasePath": "../",
+  "outputColorScheme": "carmine",
+  "base": true,
+  "items": [
+    {
+      "key": "$base-font-family",
+      "value": "\"Noto Sans KR\", \"Helvetica Neue\", \"Segoe UI\", helvetica, verdana, sans-serif"
+    }
+  ]
+}

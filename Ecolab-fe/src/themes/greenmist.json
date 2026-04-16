@@ -1,0 +1,12 @@
+{
+  "baseTheme": "generic.greenmist",
+  "assetsBasePath": "../",
+  "outputColorScheme": "greenmist",
+  "base": true,
+  "items": [
+    {
+      "key": "$base-font-family",
+      "value": "\"Noto Sans KR\", \"Helvetica Neue\", \"Segoe UI\", helvetica, verdana, sans-serif"
+    }
+  ]
+}
