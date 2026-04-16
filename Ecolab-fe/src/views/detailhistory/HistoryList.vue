@@ -124,7 +124,7 @@ const onToolbarPreparing = (e) => {
 const onSubmit = async () => {
   if (!formData.reportMatch4 || formData.reportMatch4.length !== 4) {
     vm?.proxy?.$toast?.warning(
-      "REPORTNUMBER 뒤 7자리 중 앞 4자리를 입력해주세요.",
+      "영업신고번호 7자리 중 뒤 4자리를 입력해주세요.",
     );
     return;
   }

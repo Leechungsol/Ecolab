@@ -107,7 +107,9 @@ export class BusinessService {
     if (!backNumber || backNumber.length < 4) return "";
 
     // 뒤 7자리 중 앞 4자리
-    return backNumber.substring(0, 4);
+    //return backNumber.substring(0, 4);
+    // 뒤 7자리 중 뒤 4자리
+    return backNumber.slice(-4);
   }
 
   /**
