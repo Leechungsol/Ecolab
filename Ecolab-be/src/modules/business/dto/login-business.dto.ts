@@ -6,11 +6,11 @@ export class LoginBusinessDto {
   @ApiProperty()
   @Type(() => Number)
   @IsNumber()
-  busiKey: number;
+  busiKey!: number;
 
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
   @Length(4, 4)
-  reportMatch4: string;
+  reportMatch4!: string;
 }

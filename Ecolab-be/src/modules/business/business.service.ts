@@ -71,22 +71,24 @@ export class BusinessService {
    * 기존 user service 방식과 동일하게 jsonwebtoken 직접 사용
    */
   public generateJWT(business: BusinessDto) {
-    let today = new Date();
-    let exp = new Date(today);
-    exp.setDate(today.getDate() + 60);
+  let today = new Date();
+  let exp = new Date(today);
+  exp.setDate(today.getDate() + 60);
 
-    return jwt.sign(
-      {
-        user: {
-          busiKey: business.busiKey,
-          businessName: business.busiName,
-          loginType: "BUSINESS",
-        },
-        exp: exp.getTime() / 1000,
+  const secret = this.config.getOrThrow<string>("secret");
+
+  return jwt.sign(
+    {
+      user: {
+        busiKey: business.busiKey,
+        businessName: business.busiName,
+        loginType: "BUSINESS",
       },
-      this.config.get<string>("secret")
-    );
-  }
+      exp: exp.getTime() / 1000,
+    },
+    secret
+  );
+}
 
   /**
    * REPORTNUMBER에서 검증용 4자리 추출
