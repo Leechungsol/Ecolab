@@ -1,22 +1,22 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 import { Type } from "class-transformer";
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class SaveDetailHistoryDto {
-  @ApiProperty()
+  @ApiProperty({ example: 12 })
   @Type(() => Number)
   @IsNumber()
   @IsNotEmpty()
   mbusiKey: number;
 
-  @ApiProperty()
+  @ApiProperty({ example: 101 })
   @Type(() => Number)
   @IsNumber()
   @IsNotEmpty()
   detailKey: number;
 
-  @ApiProperty()
+  @ApiProperty({ example: "조치 완료하였습니다.", required: false })
   @IsString()
   @IsOptional()
-  actionContents: string;
+  actionContents?: string;
 }
