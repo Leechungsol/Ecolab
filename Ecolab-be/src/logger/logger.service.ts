@@ -2,7 +2,6 @@
 
 import * as winston from "winston";
 import * as chalk from "chalk";
-import * as PrettyError from "pretty-error"; // it's really handy to make your life easier
 import { Logger, LoggerOptions } from "winston";
 import "winston-daily-rotate-file";
 
@@ -14,7 +13,6 @@ import "winston-daily-rotate-file";
  */
 export class LoggerService {
   private readonly logger: Logger;
-  private readonly prettyError = new PrettyError();
   public static loggerOptions: LoggerOptions = {
     transports: [
       new winston.transports.DailyRotateFile({
@@ -29,8 +27,6 @@ export class LoggerService {
   };
   constructor(private context: string) {
     this.logger = (winston as any).createLogger(LoggerService.loggerOptions);
-    this.prettyError.skipNodeFiles();
-    this.prettyError.skipPackage("express", "@nestjs/common", "@nestjs/core");
   }
   get Logger(): Logger {
     return this.logger;
