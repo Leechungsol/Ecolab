@@ -15,11 +15,6 @@
     "baseUrl": "./",
     "rootDir": ".",
     "resolveJsonModule": true,
-    "strict": false,
-    "strictPropertyInitialization": false,
-    "strictNullChecks": false,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
     "paths": {
       "@/*": ["./src/*"]
     }
