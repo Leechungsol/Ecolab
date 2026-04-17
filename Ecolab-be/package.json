@@ -8,7 +8,7 @@
     "start:watch": "NODE_ENV=production nodemon",
     "start:staging": "NODE_ENV=staging nodemon",
     "start:staging:watch": "NODE_ENV=staging nodemon",
-    "start:dev": "NODE_ENV=dev nodemon",
+    "start:dev": "cross-env NODE_ENV=dev nodemon",
     "start:dev:watch": "NODE_ENV=dev nodemon",
     "prestart:prod": "tsc",
     "start:prod": "NODE_ENV=production node dist/src/main.js",

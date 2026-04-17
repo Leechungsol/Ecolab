@@ -1,7 +1,7 @@
 <script setup>
 // 1. Imports
-import Icon from "@/assets/images/SeoYeonIcon.png";
-import Logo from "@/assets/images/SeoYeonLogo.jpg";
+import Icon from "@/assets/images/Icon.png";
+import Logo from "@/assets/images/logo.png";
 import DxScrollView from "devextreme-vue/scroll-view";
 import { ref, watch } from "vue";
 import { useRoute } from "vue-router";

@@ -14,8 +14,12 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "rootDir": ".",
-    "ignoreDeprecations": "6.0",
     "resolveJsonModule": true,
+    "strict": false,
+    "strictPropertyInitialization": false,
+    "strictNullChecks": false,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "paths": {
       "@/*": ["./src/*"]
     }

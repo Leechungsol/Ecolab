@@ -51,6 +51,10 @@ export class DetailHistoryService {
       actionContents ?? ""
     );
 
+    if (dto.deleteActionImage === "Y") {
+      await this.detailHistoryRepository.deleteActionImage(detailKey);
+    }
+
     if (actionImageFile) {
       await this.detailHistoryRepository.saveActionImage(
         detailKey,

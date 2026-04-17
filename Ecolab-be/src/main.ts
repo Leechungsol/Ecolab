@@ -9,7 +9,10 @@ import {
 } from "typeorm-transactional";
 
 async function bootstrap() {
-  initializeTransactionalContext({ storageDriver: StorageDriver.AUTO });
+
+  try{
+
+    initializeTransactionalContext({ storageDriver: StorageDriver.AUTO });
   const appOptions = {
     cors: true,
     logger: new LoggerService("Main"),
@@ -28,5 +31,13 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup("/docs", app, document);
   await app.listen(3000);
+
+  }catch (error) {
+    // 여기서 찍히는 로그가 진짜 원인입니다!
+    console.error("❌ NestJS 초기화 에러 발생:");
+    console.error(error); 
+    process.exit(1);
+  }
+  
 }
 bootstrap();

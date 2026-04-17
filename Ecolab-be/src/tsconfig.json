@@ -2,10 +2,10 @@
   "compilerOptions": {
     "target": "es2017",
     "module": "commonjs",
-    "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "sourceMap": true,
-    "ignoreDeprecations": "6.0"
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true
   }
 }

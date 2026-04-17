@@ -2,23 +2,23 @@ import { ApiProperty } from "@nestjs/swagger";
 
 export class MonthlyBusinessDto {
   @ApiProperty()
-  mbusiKey: number;
+  mbusiKey!: number;
 
   @ApiProperty()
-  busiKey: number;
+  busiKey!: number;
 
   @ApiProperty()
-  checkYm: string;
+  checkYm!: string;
 
   @ApiProperty()
-  isCheck: boolean;
+  isCheck?: boolean;
 
   @ApiProperty()
-  isScore: boolean;
+  isScore?: boolean;
 
   @ApiProperty()
-  manager: string;
+  manager?: string;
 
   @ApiProperty()
-  descr: string;
+  descr?: string;
 }

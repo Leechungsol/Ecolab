@@ -3,8 +3,7 @@
     "target": "es6",
     "module": "esnext",
     "baseUrl": "./",
-    "moduleResolution": "node",
-    "ignoreDeprecations": "6.0",
+    "moduleResolution": "bundler",
     "paths": {
       "@/*": ["src/*"]
     },

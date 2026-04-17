@@ -2,9 +2,9 @@ import { ApiProperty } from "@nestjs/swagger";
 
 export class UserDto {
   @ApiProperty()
-  userID: string;
+  userID!: string;
   @ApiProperty()
-  userName: string;
+  userName!: string;
   @ApiProperty()
-  authority: number;
+  authority!: number;
 }

@@ -7,10 +7,10 @@ export class FindMonthlyBusinessDto {
   @Type(() => Number)
   @IsNumber()
   @IsNotEmpty()
-  busiKey: number;
+  busiKey!: number;
 
   @ApiProperty({ example: "2026-04" })
   @IsString()
   @IsNotEmpty()
-  checkYm: string;
+  checkYm!: string;
 }

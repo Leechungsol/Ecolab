@@ -5,11 +5,11 @@ import { Column, Entity, Index } from "typeorm";
 @Entity("AuthorityWebMapping", { schema: "dbo" })
 export class AuthorityWebMappingEntity {
   @Column("nvarchar", { primary: true, name: "FormID", length: 30 })
-  formId: string;
+  formId!: string;
 
   @Column("int", { primary: true, name: "Authority"})
-  authority: number;
+  authority!: number;
 
   @Column("nvarchar", { name: "AuthorityType", nullable: true, length: 1 })
-  authorityType: string | null;
+  authorityType!: string | null;
 }

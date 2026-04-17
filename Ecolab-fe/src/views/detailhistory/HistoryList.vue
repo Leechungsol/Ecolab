@@ -179,7 +179,7 @@ onMounted(() => {
           <template #default>
             <div class="login-title">점검 이력 조회</div>
             <div class="login-sub-title">
-              REPORTNUMBER 뒤 7자리 중 앞 4자리를 입력해주세요.
+              영업신고번호 7자리 중 뒤 4자리를 입력해주세요.
             </div>
           </template>
         </dx-item>
@@ -237,24 +237,18 @@ onMounted(() => {
           </dx-column>
 
           <dx-column
-            data-field="detailKey"
-            caption="No"
-            alignment="center"
-            data-type="number"
-            :width="80"
-          />
+          data-field="detailContents"
+          caption="점검 내용"
+          data-type="string"
+          :min-width="120"
+        />
 
-          <dx-column
-            data-field="detailContents"
-            caption="점검 내용"
-            data-type="string"
-          />
-
-          <dx-column
-            data-field="actionContents"
-            caption="조치 내용"
-            data-type="string"
-          />
+        <dx-column
+          data-field="actionContents"
+          caption="조치 내용"
+          data-type="string"
+          :min-width="120"
+        />
         </template>
       </data-grid>
     </div>
@@ -263,7 +257,12 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .history-list-page {
-  padding: 20px;
+  padding: 5px;
+}
+@media (max-width: 768px) {
+  .history-list-page {
+    padding: 3px;
+  }
 }
 
 .login-form {

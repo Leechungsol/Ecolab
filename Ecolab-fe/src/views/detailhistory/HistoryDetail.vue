@@ -32,6 +32,8 @@ const actionImageFile = ref(null);
 const detailImagePreview = ref("");
 const actionImagePreview = ref("");
 
+const isActionImageDeleted = ref(false);
+
 // 5. APIs
 const { refetch: refetchDetail } = useQuery({
   enabled: false,
@@ -50,6 +52,7 @@ const { refetch: refetchDetail } = useQuery({
 
     detailImagePreview.value = getImageSrc(data?.detailImage);
     actionImagePreview.value = getImageSrc(data?.actionImage);
+    isActionImageDeleted.value = false;
 
     return data;
   },
@@ -93,13 +96,26 @@ const onChangeActionImage = (e) => {
   createPreview(file, "action");
 };
 
+const onRemoveActionImage = () => {
+  if (actionImagePreview.value?.startsWith("blob:")) {
+    URL.revokeObjectURL(actionImagePreview.value);
+  }
+
+  actionImageFile.value = null;
+  actionImagePreview.value = "";
+  formData.value.actionImage = null;
+  isActionImageDeleted.value = true;
+};
+
+
 const onSave = async () => {
   try {
     const payload = new FormData();
 
-    payload.append("mbusiKey", formData.value.mbusiKey);
-    payload.append("detailKey", formData.value.detailKey);
+    payload.append("mbusiKey", String(formData.value.mbusiKey));
+    payload.append("detailKey", String(formData.value.detailKey));
     payload.append("actionContents", formData.value.actionContents ?? "");
+    payload.append("deleteActionImage", isActionImageDeleted.value ? "Y" : "N");
 
     if (actionImageFile.value) {
       payload.append("actionImageFile", actionImageFile.value);
@@ -109,6 +125,7 @@ const onSave = async () => {
 
     vm?.proxy?.$toast?.success("저장되었습니다.");
   } catch (error) {
+    console.error("save error", error?.response?.data);
     vm?.proxy?.$toast?.error("저장 중 오류가 발생했습니다.");
   }
 };
@@ -142,12 +159,6 @@ onUnmounted(() => {
         icon="chevronleft"
         styling-mode="outlined"
         @click="onBack"
-      />
-      <dx-button
-        text="저장"
-        icon="save"
-        type="default"
-        @click="onSave"
       />
     </div>
 
@@ -220,13 +231,19 @@ onUnmounted(() => {
             </label>
 
             <label class="upload-button secondary">
-              파일 선택
+              파일 삭제
               <input
-                type="file"
+                type="danger"
                 accept="image/*"
-                @change="onChangeActionImage"
+                @click="onRemoveActionImage"
               />
             </label>
+            <dx-button
+              text="저장"
+              icon="save"
+              type="default"
+              @click="onSave"
+            />
           </div>
         </div>
       </div>
@@ -298,6 +315,10 @@ onUnmounted(() => {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.image-actions .dx-button {
+  margin-left: auto; /* 👉 저장 버튼만 오른쪽 */
 }
 
 .upload-button {

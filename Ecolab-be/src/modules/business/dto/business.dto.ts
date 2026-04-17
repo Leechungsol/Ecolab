@@ -2,11 +2,11 @@ import { ApiProperty } from "@nestjs/swagger";
 
 export class BusinessDto {
   @ApiProperty()
-  busiKey: number;
+  busiKey!: number;
 
   @ApiProperty()
-  busiName: string;
+  busiName!: string;
 
   @ApiProperty()
-  reportNumber: string;
+  reportNumber!: string;
 }

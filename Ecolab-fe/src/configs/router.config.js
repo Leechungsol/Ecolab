@@ -2,6 +2,7 @@ import { apiAuthority } from "@/APIs/authority.api";
 import { LOCAL_STORAGE } from "@/constants/local-storage.constant";
 import navigations from "@/constants/navigation.constant";
 import errorLayout from "@/layouts/Error.vue";
+import externalLayout from "@/layouts/External.vue";
 import privateLayout from "@/layouts/Private.vue";
 import publicLayout from "@/layouts/Public.vue";
 import { routeStore } from "@/stores/route.store";
@@ -41,7 +42,8 @@ const router = new createRouter({
       name: "HistoryList",
       meta: {
         requiresAuth: false,
-        layout: privateLayout,
+        layout: externalLayout,
+
       },
       component: HistoryList,
     },
@@ -50,7 +52,7 @@ const router = new createRouter({
       name: "HistoryDetail",
       meta: {
         requiresAuth: false,
-        layout: privateLayout,
+        layout: externalLayout,
       },  
       component: HistoryDetail,
     },

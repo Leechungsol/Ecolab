@@ -4,27 +4,27 @@ import { Column, Entity, Index } from "typeorm"
 @Entity("DetailHistory", { schema: "dbo" })
 export class DetailHistoryEntity { 
   @Column("int", { name: "HistoryKey", nullable: true })
-  historyKey: number
+  historyKey!: number
 
   @Column("int", { primary: true, name: "DetailKey", nullable: true })
-  detailKey: number
+  detailKey!: number
 
   @Column("nvarchar", { name: "DetailContents", nullable: false, length: 4000 })
-  detailContents: string
+  detailContents?: string
 
   @Column("nvarchar", { name: "CorrectiveAction", nullable: false, length: 4000 })
-  correctiveAction: string
+  correctiveAction?: string
 
   @Column("nvarchar", { name: "ActionContents", nullable: false, length: 4000 })
-  actionContents: string
+  actionContents?: string
 
   @Column("bit", { name: "isDeleted", nullable: false })
-  isDeleted: boolean
+  isDeleted!: boolean
 
   @Column("int", { name: "KeywordKey", nullable: true })
-  keywordKey: number
+  keywordKey?: number
 
   @Column("int", { name: "ListKey", nullable: true })
-  listKey: number
+  listKey?: number
 
 }

@@ -22,6 +22,11 @@ export class UserService {
    */
   async findByUsername(userName: string): Promise<UserDto> {
     const result = await this.userRepository.findOne({ where: { userName } });
+
+    // 데이터가 없으면 예외를 발생시켜 이후 코드가 실행되지 않게 합니다.
+    if (!result) {
+      throw new NotFoundException(`User with ID ${result} not found`);
+    }
     return this.buildUserRO(result);
   }
 
@@ -48,6 +53,12 @@ export class UserService {
     const user = await this.userRepository.findOne({
       where: { userID, isDeleted: false  },
     });
+
+    // 데이터가 없으면 예외를 발생시켜 이후 코드가 실행되지 않게 합니다.
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userID} not found`);
+    }
+
     return this.buildUserRO(user);
   }
 
@@ -69,7 +80,7 @@ export class UserService {
         },
         exp: exp.getTime() / 1000,
       },
-      this.config.get<string>("secret")
+      this.config.get<string>("secret")!
     );
   }
 
@@ -81,8 +92,8 @@ export class UserService {
   private buildUserRO(user: UserInfoEntity): UserDto {
     const userRO = {
       userID: user.userID,
-      userName: user.userName,
-      authority : user.authority
+      userName: user.userName?? "",
+      authority : user.authority?? 0
     };
 
     return userRO;

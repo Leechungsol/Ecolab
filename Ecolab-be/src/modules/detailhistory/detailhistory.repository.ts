@@ -112,4 +112,17 @@ export class DetailHistoryRepository {
 
     return await this.detailImageRepository.save(newImage);
   }
+
+  async deleteActionImage(detailKey: number) {
+    const exists = await this.detailImageRepository.findOne({
+      where: {
+        detailKey,
+        imageType: "2",
+      },
+    });
+
+    if (!exists) return null;
+
+    return await this.detailImageRepository.remove(exists);
+  }
 }

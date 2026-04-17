@@ -15,8 +15,8 @@ import {
   ApiOperation,
   ApiTags,
 } from "@nestjs/swagger";
-import { FileInterceptor } from "@nestjs/platform-express";
 import { ValidationPipe } from "../../shared/pipes/validation.pipe";
+import { FileInterceptor } from "@nestjs/platform-express";
 import { DetailHistoryService } from "./detailhistory.service";
 import { SaveDetailHistoryDto } from "./dto/save-detailhistory.dto";
 
@@ -46,35 +46,10 @@ export class DetailHistoryController {
   }
 
   @Post("/save")
-  @UsePipes(new ValidationPipe())
   @UseInterceptors(FileInterceptor("actionImageFile"))
   @ApiConsumes("multipart/form-data")
-  @ApiOperation({ summary: "Save action contents and action image" })
-  @ApiBody({
-    schema: {
-      type: "object",
-      properties: {
-        mbusiKey: { type: "number", example: 12 },
-        detailKey: { type: "number", example: 101 },
-        actionContents: { type: "string", example: "조치 완료하였습니다." },
-        actionImageFile: {
-          type: "string",
-          format: "binary",
-        },
-      },
-      required: ["mbusiKey", "detailKey"],
-    },
-  })
-  @ApiOkResponse({
-    schema: {
-      example: {
-        success: true,
-        detailKey: 101,
-      },
-    },
-  })
   async save(
-    @Body() dto: SaveDetailHistoryDto,
+    @Body(new ValidationPipe()) dto: SaveDetailHistoryDto,
     @UploadedFile() actionImageFile?: any
   ) {
     return await this.detailHistoryService.saveDetailHistory(

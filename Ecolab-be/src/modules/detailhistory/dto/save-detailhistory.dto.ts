@@ -7,16 +7,21 @@ export class SaveDetailHistoryDto {
   @Type(() => Number)
   @IsNumber()
   @IsNotEmpty()
-  mbusiKey: number;
+  mbusiKey!: number;
 
   @ApiProperty({ example: 101 })
   @Type(() => Number)
   @IsNumber()
   @IsNotEmpty()
-  detailKey: number;
+  detailKey!: number;
 
   @ApiProperty({ example: "조치 완료하였습니다.", required: false })
-  @IsString()
   @IsOptional()
+  @IsString()
   actionContents?: string;
+
+  @ApiProperty({ example: "N", required: false })
+  @IsOptional()
+  @IsString()
+  deleteActionImage?: string;
 }

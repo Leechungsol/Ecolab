@@ -1,21 +1,16 @@
-// logger.service.ts
-
 import * as winston from "winston";
 import * as chalk from "chalk";
-import * as PrettyError from "pretty-error"; // it's really handy to make your life easier
 import { Logger, LoggerOptions } from "winston";
 import "winston-daily-rotate-file";
 
-/**
- * The `LoggerService` class provides a logging service that uses the Winston logger library.
- * It supports logging to a daily rotating log file, with options for configuring the log file name, directory, date pattern, and maximum file size and age.
- * The class also provides methods for logging messages at different levels (info, error, warn), and a method for overriding the logger options.
- * Additionally, it includes a `formattedLog` method that formats the log messages using the Chalk library for colorized output in the console.
- */
+// 가장 안전한 방식: require 사용
+const PrettyError = require("pretty-error");
+
 export class LoggerService {
   private readonly logger: Logger;
-  private readonly prettyError = new PrettyError();
-  public static loggerOptions: LoggerOptions = {
+  private readonly prettyError: any;
+
+  public static loggerOptions?: LoggerOptions = {
     transports: [
       new winston.transports.DailyRotateFile({
         filename: "woori-be-%DATE%.log",
@@ -27,10 +22,21 @@ export class LoggerService {
       }),
     ],
   };
+
   constructor(private context: string) {
-    this.logger = (winston as any).createLogger(LoggerService.loggerOptions);
-    this.prettyError.skipNodeFiles();
-    this.prettyError.skipPackage("express", "@nestjs/common", "@nestjs/core");
+    // 1. Winston 초기화 (as any 제거하고 안전하게)
+    this.logger = winston.createLogger(LoggerService.loggerOptions || {
+      transports: [new winston.transports.Console()]
+    });
+
+    // 2. PrettyError 초기화 (방어 코드 추가)
+    try {
+      this.prettyError = new PrettyError();
+      this.prettyError.skipNodeFiles();
+      this.prettyError.skipPackage("express", "@nestjs/common", "@nestjs/core");
+    } catch (e) {
+      console.error("PrettyError initialization failed:", e);
+    }
   }
   get Logger(): Logger {
     return this.logger;

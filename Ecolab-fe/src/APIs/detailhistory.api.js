@@ -26,12 +26,11 @@ export const apiDetailHistory = {
    * Saves action contents and action image.
    * params must be FormData
    */
-  save: async (params) => {
-    const { data } = await axiosInstance.post(`${base}/save`, params, {
+  save(data) {
+    return axiosInstance.post("/detailhistory/save", data, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
     });
-    return data;
   },
 };
