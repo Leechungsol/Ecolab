@@ -8,7 +8,7 @@
     "start:watch": "NODE_ENV=production nodemon",
     "start:staging": "NODE_ENV=staging nodemon",
     "start:staging:watch": "NODE_ENV=staging nodemon",
-    "start:dev": "cross-env NODE_ENV=dev nodemon",
+    "start:dev": "NODE_ENV=dev nodemon",
     "start:dev:watch": "NODE_ENV=dev nodemon",
     "prestart:prod": "tsc",
     "start:prod": "NODE_ENV=production node dist/src/main.js",
@@ -65,6 +65,7 @@
     "ts-jest": "^29.2.3",
     "ts-node": "^10.9.2",
     "typeorm-model-generator-suffix": "^1.0.6",
+    "win-node-env": "^0.6.1",
     "winston": "^3.13.1",
     "winston-daily-rotate-file": "^5.0.0"
   }
