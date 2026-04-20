@@ -16,9 +16,6 @@ export class DetailHistoryRepository {
     private readonly detailImageRepository: Repository<DetailImageEntity>
   ) {}
 
-  /**
-   * 목록 조회
-   */
   async findList(mbusiKey: number) {
     return await this.dataSource.query(
       `
@@ -34,9 +31,6 @@ export class DetailHistoryRepository {
     );
   }
 
-  /**
-   * 상세 조회
-   */
   async findDetail(mbusiKey: number, detailKey: number) {
     const result = await this.dataSource.query(
       `
@@ -57,9 +51,17 @@ export class DetailHistoryRepository {
     return result?.[0];
   }
 
-  /**
-   * ActionContents 저장
-   */
+  async findImageBuffer(detailKey: number, imageType: "1" | "2") {
+    const image = await this.detailImageRepository.findOne({
+      where: {
+        detailKey,
+        imageType,
+      },
+    });
+
+    return image?.image ?? null;
+  }
+
   async updateActionContents(detailKey: number, actionContents: string) {
     const detailHistory = await this.detailHistoryRepository.findOne({
       where: { detailKey },
@@ -74,16 +76,12 @@ export class DetailHistoryRepository {
     return await this.detailHistoryRepository.save(detailHistory);
   }
 
-  /**
-   * 조치 이미지 저장 (ImageType = '2')
-   * 있으면 update, 없으면 insert
-   */
   async saveActionImage(
     detailKey: number,
-    imageBuffer: Buffer,
+    file: any,
     userId = "business"
   ) {
-    if (!imageBuffer) return null;
+    if (!file) return null;
 
     const exists = await this.detailImageRepository.findOne({
       where: {
@@ -93,7 +91,7 @@ export class DetailHistoryRepository {
     });
 
     if (exists) {
-      exists.image = imageBuffer;
+      exists.image = file.buffer;
       exists.lastUpdateID = userId;
       exists.lastUpdateDtm = new Date();
 
@@ -102,7 +100,7 @@ export class DetailHistoryRepository {
 
     const newImage = this.detailImageRepository.create({
       detailKey,
-      image: imageBuffer,
+      image: file.buffer,
       imageType: "2",
       createID: userId,
       createDtm: new Date(),
@@ -111,7 +109,7 @@ export class DetailHistoryRepository {
     });
 
     return await this.detailImageRepository.save(newImage);
-}
+  }
 
   async deleteActionImage(detailKey: number) {
     const exists = await this.detailImageRepository.findOne({

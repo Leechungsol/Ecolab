@@ -17,50 +17,22 @@ const formData = ref({
   detailKey: null,
   detailContents: "",
   actionContents: "",
-  detailImage: null,
-  actionImage: null,
+  hasDetailImage: false,
+  hasActionImage: false,
 });
 
-const detailImageFile = ref(null);
 const actionImageFile = ref(null);
-
 const detailImagePreview = ref("");
 const actionImagePreview = ref("");
-
 const isActionImageDeleted = ref(false);
 
 const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 
-const { refetch: refetchDetail } = useQuery({
-  enabled: false,
-  queryKey: ["detailhistory-detail", route.params.mbusiKey, route.params.detailKey],
-  queryFn: () =>
-    apiDetailHistory.getDetail(route.params.mbusiKey, route.params.detailKey),
-  select: (data) => {
-    formData.value = {
-      mbusiKey: data?.mbusiKey ?? null,
-      detailKey: data?.detailKey ?? null,
-      detailContents: data?.detailContents ?? "",
-      actionContents: data?.actionContents ?? "",
-      detailImage: data?.detailImage ?? null,
-      actionImage: data?.actionImage ?? null,
-    };
+const buildDetailImageUrl = (detailKey) =>
+  `/api/detailhistory/image/detail/${detailKey}?t=${Date.now()}`;
 
-    detailImagePreview.value = getImageSrc(data?.detailImage);
-    actionImagePreview.value = getImageSrc(data?.actionImage);
-    isActionImageDeleted.value = false;
-
-    return data;
-  },
-});
-
-const getImageSrc = (image) => {
-  if (!image) return "";
-  if (typeof image !== "string") return "";
-  if (image.startsWith("data:image")) return image;
-  if (image.startsWith("blob:")) return image;
-  return `data:image/jpeg;base64,${image}`;
-};
+const buildActionImageUrl = (detailKey) =>
+  `/api/detailhistory/image/action/${detailKey}?t=${Date.now()}`;
 
 const revokePreviewIfBlob = (url) => {
   if (url && typeof url === "string" && url.startsWith("blob:")) {
@@ -68,22 +40,14 @@ const revokePreviewIfBlob = (url) => {
   }
 };
 
-const createPreview = (file, type) => {
+const createPreview = (file) => {
   if (!file) return;
 
+  revokePreviewIfBlob(actionImagePreview.value);
+
   const objectUrl = URL.createObjectURL(file);
-
-  if (type === "detail") {
-    revokePreviewIfBlob(detailImagePreview.value);
-    detailImageFile.value = file;
-    detailImagePreview.value = objectUrl;
-  }
-
-  if (type === "action") {
-    revokePreviewIfBlob(actionImagePreview.value);
-    actionImageFile.value = file;
-    actionImagePreview.value = objectUrl;
-  }
+  actionImageFile.value = file;
+  actionImagePreview.value = objectUrl;
 };
 
 const loadImage = (file) => {
@@ -112,7 +76,6 @@ const compressImageSafe = async (file) => {
   try {
     if (!file || !file.type.startsWith("image/")) return file;
 
-    // heic/heif는 브라우저별 이슈가 많아서 원본 유지
     const lowerName = file.name?.toLowerCase() ?? "";
     const isHeic =
       file.type.includes("heic") ||
@@ -124,7 +87,6 @@ const compressImageSafe = async (file) => {
       return file;
     }
 
-    // 1MB 이하면 원본
     if (file.size <= 1024 * 1024) {
       return file;
     }
@@ -155,40 +117,55 @@ const compressImageSafe = async (file) => {
     const blob = await canvasToBlob(canvas, "image/jpeg", 0.8);
     if (!blob) return file;
 
-    return new File(
-      [blob],
-      file.name.replace(/\.[^.]+$/, ".jpg"),
-      {
-        type: "image/jpeg",
-        lastModified: Date.now(),
-      }
-    );
+    return new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), {
+      type: "image/jpeg",
+      lastModified: Date.now(),
+    });
   } catch (error) {
     console.error("compressImageSafe fallback", error);
-    return file; // 압축 실패해도 원본 사용
+    return file;
   }
 };
+
+const { refetch: refetchDetail } = useQuery({
+  enabled: false,
+  queryKey: ["detailhistory-detail", route.params.mbusiKey, route.params.detailKey],
+  queryFn: () =>
+    apiDetailHistory.getDetail(route.params.mbusiKey, route.params.detailKey),
+  select: (data) => {
+    formData.value = {
+      mbusiKey: data?.mbusiKey ?? null,
+      detailKey: data?.detailKey ?? null,
+      detailContents: data?.detailContents ?? "",
+      actionContents: data?.actionContents ?? "",
+      hasDetailImage: data?.hasDetailImage ?? false,
+      hasActionImage: data?.hasActionImage ?? false,
+    };
+
+    detailImagePreview.value = data?.hasDetailImage
+      ? buildDetailImageUrl(data.detailKey)
+      : "";
+
+    if (!actionImageFile.value) {
+      actionImagePreview.value = data?.hasActionImage
+        ? buildActionImageUrl(data.detailKey)
+        : "";
+    }
+
+    isActionImageDeleted.value = false;
+
+    return data;
+  },
+});
 
 const onChangeActionImage = async (e) => {
   try {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    console.log("selected file", {
-      name: file.name,
-      type: file.type,
-      size: file.size,
-    });
-
     const safeFile = await compressImageSafe(file);
 
-    console.log("upload file", {
-      name: safeFile.name,
-      type: safeFile.type,
-      size: safeFile.size,
-    });
-
-    createPreview(safeFile, "action");
+    createPreview(safeFile);
     isActionImageDeleted.value = false;
     e.target.value = "";
   } catch (error) {
@@ -199,10 +176,11 @@ const onChangeActionImage = async (e) => {
 
 const onRemoveActionImage = () => {
   revokePreviewIfBlob(actionImagePreview.value);
+
   actionImageFile.value = null;
   actionImagePreview.value = "";
-  formData.value.actionImage = null;
   isActionImageDeleted.value = true;
+  formData.value.hasActionImage = false;
 };
 
 const onSave = async () => {
@@ -219,10 +197,21 @@ const onSave = async () => {
     }
 
     await apiDetailHistory.save(payload);
+
+    if (isActionImageDeleted.value) {
+      actionImagePreview.value = "";
+    } else if (actionImageFile.value) {
+      revokePreviewIfBlob(actionImagePreview.value);
+      actionImagePreview.value = buildActionImageUrl(formData.value.detailKey);
+      formData.value.hasActionImage = true;
+    }
+
+    actionImageFile.value = null;
+    isActionImageDeleted.value = false;
+
     vm?.proxy?.$toast?.success("저장되었습니다.");
   } catch (error) {
-    console.error("save error full", error);
-    console.error("save error response", error?.response?.data);
+    console.error("save error", error?.response?.data || error);
     vm?.proxy?.$toast?.error("저장 중 오류가 발생했습니다.");
   }
 };
@@ -238,7 +227,6 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  revokePreviewIfBlob(detailImagePreview.value);
   revokePreviewIfBlob(actionImagePreview.value);
 
   queryClient.removeQueries({
@@ -317,27 +305,14 @@ onUnmounted(() => {
           </div>
 
           <div class="image-actions">
-            <template v-if="isMobile">
-              <label class="upload-button">
-                사진 촬영/선택
-                <input
-                  type="file"
-                  accept="image/*"
-                  @change="onChangeActionImage"
-                />
-              </label>
-            </template>
-
-            <template v-else>
-              <label class="upload-button">
-                사진 선택
-                <input
-                  type="file"
-                  accept="image/*"
-                  @change="onChangeActionImage"
-                />
-              </label>
-            </template>
+            <label class="upload-button">
+              {{ isMobile ? "사진 촬영/선택" : "사진 선택" }}
+              <input
+                type="file"
+                accept="image/*"
+                @change="onChangeActionImage"
+              />
+            </label>
 
             <button
               type="button"

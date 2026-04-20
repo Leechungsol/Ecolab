@@ -6,18 +6,18 @@ import {
   Post,
   UploadedFile,
   UseInterceptors,
-  BadRequestException,
+  Res,
 } from "@nestjs/common";
 import {
   ApiConsumes,
   ApiOperation,
   ApiTags,
 } from "@nestjs/swagger";
+import { Response } from "express";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { memoryStorage } from "multer";
-import { ValidationPipe } from "../../shared/pipes/validation.pipe";
 import { DetailHistoryService } from "./detailhistory.service";
 import { SaveDetailHistoryDto } from "./dto/save-detailhistory.dto";
+import { ValidationPipe } from "../../shared/pipes/validation.pipe";
 
 @ApiTags("detailhistory")
 @Controller("detailhistory")
@@ -44,29 +44,44 @@ export class DetailHistoryController {
     );
   }
 
-  @Post("/save")
-  @UseInterceptors(
-    FileInterceptor("actionImageFile", {
-      storage: memoryStorage(),
-      limits: {
-        fileSize: 15 * 1024 * 1024, // 15MB
-      },
-      fileFilter: (req, file, cb) => {
-        if (!file.mimetype?.startsWith("image/")) {
-          return cb(
-            new BadRequestException("이미지 파일만 업로드할 수 있습니다."),
-            false
-          );
-        }
+  @Get("/image/detail/:detailKey")
+  @ApiOperation({ summary: "Detail image" })
+  async getDetailImage(
+    @Param("detailKey") detailKey: number,
+    @Res() res: Response
+  ) {
+    const image = await this.detailHistoryService.getDetailImage(
+      Number(detailKey)
+    );
 
-        cb(null, true);
-      },
-    })
-  )
+    res.setHeader("Content-Type", image.contentType);
+    res.setHeader("Cache-Control", "no-store");
+
+    return res.send(image.buffer);
+  }
+
+  @Get("/image/action/:detailKey")
+  @ApiOperation({ summary: "Action image" })
+  async getActionImage(
+    @Param("detailKey") detailKey: number,
+    @Res() res: Response
+  ) {
+    const image = await this.detailHistoryService.getActionImage(
+      Number(detailKey)
+    );
+
+    res.setHeader("Content-Type", image.contentType);
+    res.setHeader("Cache-Control", "no-store");
+
+    return res.send(image.buffer);
+  }
+
+  @Post("/save")
+  @UseInterceptors(FileInterceptor("actionImageFile"))
   @ApiConsumes("multipart/form-data")
   async save(
     @Body(new ValidationPipe()) dto: SaveDetailHistoryDto,
-    @UploadedFile() actionImageFile?: Express.Multer.File
+    @UploadedFile() actionImageFile?: any
   ) {
     return await this.detailHistoryService.saveDetailHistory(
       dto,

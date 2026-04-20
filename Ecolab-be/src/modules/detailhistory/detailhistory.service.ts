@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { DetailHistoryRepository } from "./detailhistory.repository";
 import { SaveDetailHistoryDto } from "./dto/save-detailhistory.dto";
-import * as sharp from "sharp";
 
 @Injectable()
 export class DetailHistoryService {
@@ -32,22 +31,48 @@ export class DetailHistoryService {
       detailKey: result.DetailKey,
       detailContents: result.DetailContents,
       actionContents: result.ActionContents,
-      detailImage: result.DetailImage
-        ? Buffer.from(result.DetailImage).toString("base64")
-        : null,
-      actionImage: result.ActionImage
-        ? Buffer.from(result.ActionImage).toString("base64")
-        : null,
+      hasDetailImage: !!result.DetailImage,
+      hasActionImage: !!result.ActionImage,
+    };
+  }
+
+  async getDetailImage(detailKey: number) {
+    const imageBuffer = await this.detailHistoryRepository.findImageBuffer(
+      detailKey,
+      "1"
+    );
+
+    if (!imageBuffer) {
+      throw new NotFoundException("점검 이미지가 없습니다.");
+    }
+
+    return {
+      buffer: imageBuffer,
+      contentType: this.getImageContentType(imageBuffer),
+    };
+  }
+
+  async getActionImage(detailKey: number) {
+    const imageBuffer = await this.detailHistoryRepository.findImageBuffer(
+      detailKey,
+      "2"
+    );
+
+    if (!imageBuffer) {
+      throw new NotFoundException("조치 이미지가 없습니다.");
+    }
+
+    return {
+      buffer: imageBuffer,
+      contentType: this.getImageContentType(imageBuffer),
     };
   }
 
   async saveDetailHistory(
     dto: SaveDetailHistoryDto,
-    actionImageFile?: Express.Multer.File
+    actionImageFile?: any
   ) {
     const { detailKey, actionContents } = dto;
-
-    console.log("dto:", dto);
 
     await this.detailHistoryRepository.updateActionContents(
       detailKey,
@@ -58,33 +83,10 @@ export class DetailHistoryService {
       await this.detailHistoryRepository.deleteActionImage(detailKey);
     }
 
-    if (actionImageFile?.buffer) {
-      console.log("actionImageFile:", {
-        originalname: actionImageFile.originalname,
-        mimetype: actionImageFile.mimetype,
-        size: actionImageFile.size,
-        hasBuffer: !!actionImageFile.buffer,
-      });
-
-      const resizedBuffer = await sharp(actionImageFile.buffer)
-        .rotate() // 모바일 사진 방향 보정
-        .resize({
-          width: 1600,
-          height: 1600,
-          fit: "inside",
-          withoutEnlargement: true,
-        })
-        .jpeg({
-          quality: 80,
-          mozjpeg: true,
-        })
-        .toBuffer();
-
-      console.log("resizedBuffer size:", resizedBuffer.length);
-
+    if (actionImageFile) {
       await this.detailHistoryRepository.saveActionImage(
         detailKey,
-        resizedBuffer,
+        actionImageFile,
         "business"
       );
     }
@@ -93,5 +95,56 @@ export class DetailHistoryService {
       success: true,
       detailKey,
     };
+  }
+
+  private getImageContentType(buffer: Buffer) {
+    if (!buffer || buffer.length < 12) {
+      return "application/octet-stream";
+    }
+
+    // JPEG
+    if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
+      return "image/jpeg";
+    }
+
+    // PNG
+    if (
+      buffer[0] === 0x89 &&
+      buffer[1] === 0x50 &&
+      buffer[2] === 0x4e &&
+      buffer[3] === 0x47
+    ) {
+      return "image/png";
+    }
+
+    // GIF
+    if (
+      buffer[0] === 0x47 &&
+      buffer[1] === 0x49 &&
+      buffer[2] === 0x46
+    ) {
+      return "image/gif";
+    }
+
+    // WEBP (RIFF....WEBP)
+    if (
+      buffer[0] === 0x52 &&
+      buffer[1] === 0x49 &&
+      buffer[2] === 0x46 &&
+      buffer[3] === 0x46 &&
+      buffer[8] === 0x57 &&
+      buffer[9] === 0x45 &&
+      buffer[10] === 0x42 &&
+      buffer[11] === 0x50
+    ) {
+      return "image/webp";
+    }
+
+    // BMP
+    if (buffer[0] === 0x42 && buffer[1] === 0x4d) {
+      return "image/bmp";
+    }
+
+    return "image/jpeg";
   }
 }
