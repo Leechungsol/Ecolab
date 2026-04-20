@@ -5,20 +5,18 @@ import * as jwt from "jsonwebtoken";
 import { UserService } from "../modules/user/user.service";
 import { ConfigService } from "@nestjs/config";
 
+interface AuthRequest extends Request {
+  user?: any;
+}
+
 @Injectable()
-/**
- * Middleware that verifies the authentication token in the request headers and attaches the authenticated user to the request object.
- *
- * If the token is valid and the user exists, the middleware will set the `req.user` property with the user object.
- * If the token is missing or invalid, the middleware will throw an `HttpException` with a 401 Unauthorized status.
- */
 export class AuthMiddleware implements NestMiddleware {
   constructor(
     private readonly userService: UserService,
     private readonly configService: ConfigService
   ) {}
 
-  async use(req: Request, res: Response, next: NextFunction) {
+  async use(req: AuthRequest, res: Response, next: NextFunction) {
     const authHeaders = req.headers.authorization;
     if (authHeaders && (authHeaders as string).split(" ")[1]) {
       const token = (authHeaders as string).split(" ")[1];

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { DetailHistoryRepository } from "./detailhistory.repository";
 import { SaveDetailHistoryDto } from "./dto/save-detailhistory.dto";
-import sharp from "sharp";
+import * as sharp from "sharp";
 
 @Injectable()
 export class DetailHistoryService {
