@@ -29,6 +29,8 @@ const actionImagePreview = ref("");
 
 const isActionImageDeleted = ref(false);
 
+const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+
 const { refetch: refetchDetail } = useQuery({
   enabled: false,
   queryKey: ["detailhistory-detail", route.params.mbusiKey, route.params.detailKey],
@@ -54,17 +56,33 @@ const { refetch: refetchDetail } = useQuery({
 
 const getImageSrc = (image) => {
   if (!image) return "";
-
   if (typeof image !== "string") return "";
   if (image.startsWith("data:image")) return image;
   if (image.startsWith("blob:")) return image;
-
   return `data:image/*;base64,${image}`;
 };
 
 const revokePreviewIfBlob = (url) => {
   if (url && typeof url === "string" && url.startsWith("blob:")) {
     URL.revokeObjectURL(url);
+  }
+};
+
+const createPreview = (file, type) => {
+  if (!file) return;
+
+  const objectUrl = URL.createObjectURL(file);
+
+  if (type === "detail") {
+    revokePreviewIfBlob(detailImagePreview.value);
+    detailImageFile.value = file;
+    detailImagePreview.value = objectUrl;
+  }
+
+  if (type === "action") {
+    revokePreviewIfBlob(actionImagePreview.value);
+    actionImageFile.value = file;
+    actionImagePreview.value = objectUrl;
   }
 };
 
@@ -90,69 +108,64 @@ const canvasToBlob = (canvas, type, quality) => {
   });
 };
 
-const compressImage = async (file) => {
-  if (!file || !file.type.startsWith("image/")) return file;
+const compressImageSafe = async (file) => {
+  try {
+    if (!file || !file.type.startsWith("image/")) return file;
 
-  // png, jpg, jpeg, webp 등을 처리
-  // 너무 작은 파일이면 원본 유지
-  const maxOriginalSize = 1024 * 1024; // 1MB
-  const maxWidth = 1600;
-  const maxHeight = 1600;
-  const outputType = "image/jpeg";
-  const quality = 0.8;
+    // heic/heif는 브라우저별 이슈가 많아서 원본 유지
+    const lowerName = file.name?.toLowerCase() ?? "";
+    const isHeic =
+      file.type.includes("heic") ||
+      file.type.includes("heif") ||
+      lowerName.endsWith(".heic") ||
+      lowerName.endsWith(".heif");
 
-  if (file.size <= maxOriginalSize) {
-    return file;
-  }
-
-  const img = await loadImage(file);
-
-  let { width, height } = img;
-
-  if (width > maxWidth || height > maxHeight) {
-    const ratio = Math.min(maxWidth / width, maxHeight / height);
-    width = Math.round(width * ratio);
-    height = Math.round(height * ratio);
-  }
-
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-
-  const ctx = canvas.getContext("2d");
-  ctx.drawImage(img, 0, 0, width, height);
-
-  const blob = await canvasToBlob(canvas, outputType, quality);
-
-  if (!blob) {
-    return file;
-  }
-
-  return new File(
-    [blob],
-    file.name.replace(/\.[^.]+$/, ".jpg"),
-    {
-      type: outputType,
-      lastModified: Date.now(),
+    if (isHeic) {
+      return file;
     }
-  );
-};
 
-const createPreview = (file, type) => {
-  if (!file) return;
+    // 1MB 이하면 원본
+    if (file.size <= 1024 * 1024) {
+      return file;
+    }
 
-  const objectUrl = URL.createObjectURL(file);
+    const img = await loadImage(file);
 
-  if (type === "detail") {
-    revokePreviewIfBlob(detailImagePreview.value);
-    detailImageFile.value = file;
-    detailImagePreview.value = objectUrl;
-  }
+    let width = img.width;
+    let height = img.height;
 
-  if (type === "action") {
-    revokePreviewIfBlob(actionImagePreview.value);
-    actionImageFile.value = file;
-    actionImagePreview.value = objectUrl;
+    const maxWidth = 1600;
+    const maxHeight = 1600;
+
+    if (width > maxWidth || height > maxHeight) {
+      const ratio = Math.min(maxWidth / width, maxHeight / height);
+      width = Math.round(width * ratio);
+      height = Math.round(height * ratio);
+    }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return file;
+
+    ctx.drawImage(img, 0, 0, width, height);
+
+    const blob = await canvasToBlob(canvas, "image/jpeg", 0.8);
+    if (!blob) return file;
+
+    return new File(
+      [blob],
+      file.name.replace(/\.[^.]+$/, ".jpg"),
+      {
+        type: "image/jpeg",
+        lastModified: Date.now(),
+      }
+    );
+  } catch (error) {
+    console.error("compressImageSafe fallback", error);
+    return file; // 압축 실패해도 원본 사용
   }
 };
 
@@ -161,12 +174,22 @@ const onChangeActionImage = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const compressedFile = await compressImage(file);
+    console.log("selected file", {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+    });
 
-    createPreview(compressedFile, "action");
+    const safeFile = await compressImageSafe(file);
+
+    console.log("upload file", {
+      name: safeFile.name,
+      type: safeFile.type,
+      size: safeFile.size,
+    });
+
+    createPreview(safeFile, "action");
     isActionImageDeleted.value = false;
-
-    // 같은 파일 다시 선택해도 change 이벤트 타게 초기화
     e.target.value = "";
   } catch (error) {
     console.error("image change error", error);
@@ -176,7 +199,6 @@ const onChangeActionImage = async (e) => {
 
 const onRemoveActionImage = () => {
   revokePreviewIfBlob(actionImagePreview.value);
-
   actionImageFile.value = null;
   actionImagePreview.value = "";
   formData.value.actionImage = null;
@@ -197,10 +219,10 @@ const onSave = async () => {
     }
 
     await apiDetailHistory.save(payload);
-
     vm?.proxy?.$toast?.success("저장되었습니다.");
   } catch (error) {
-    console.error("save error", error?.response?.data || error);
+    console.error("save error full", error);
+    console.error("save error response", error?.response?.data);
     vm?.proxy?.$toast?.error("저장 중 오류가 발생했습니다.");
   }
 };
@@ -295,14 +317,37 @@ onUnmounted(() => {
           </div>
 
           <div class="image-actions">
-            <label class="upload-button">
-              사진 촬영 / 선택
-              <input
-                type="file"
-                accept="image/*"
-                @change="onChangeActionImage"
-              />
-            </label>
+            <template v-if="isMobile">
+              <label class="upload-button">
+                갤러리 선택
+                <input
+                  type="file"
+                  accept="image/*"
+                  @change="onChangeActionImage"
+                />
+              </label>
+
+              <label class="upload-button">
+                사진 촬영
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  @change="onChangeActionImage"
+                />
+              </label>
+            </template>
+
+            <template v-else>
+              <label class="upload-button">
+                사진 선택
+                <input
+                  type="file"
+                  accept="image/*"
+                  @change="onChangeActionImage"
+                />
+              </label>
+            </template>
 
             <button
               type="button"
