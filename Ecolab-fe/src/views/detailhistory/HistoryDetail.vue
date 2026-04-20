@@ -1,5 +1,4 @@
 <script setup>
-// 1. Imports
 import { apiDetailHistory } from "@/APIs/detailhistory.api";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
@@ -8,15 +7,11 @@ import DxTextArea from "devextreme-vue/text-area";
 import { getCurrentInstance, onMounted, onUnmounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-// 2. Hooks
 const route = useRoute();
 const router = useRouter();
 const vm = getCurrentInstance();
 const queryClient = useQueryClient();
 
-// 3. Define props, emits, models
-
-// 4. Define refs and reactive variables
 const formData = ref({
   mbusiKey: null,
   detailKey: null,
@@ -34,7 +29,6 @@ const actionImagePreview = ref("");
 
 const isActionImageDeleted = ref(false);
 
-// 5. APIs
 const { refetch: refetchDetail } = useQuery({
   enabled: false,
   queryKey: ["detailhistory-detail", route.params.mbusiKey, route.params.detailKey],
@@ -58,11 +52,6 @@ const { refetch: refetchDetail } = useQuery({
   },
 });
 
-// 6. Computed properties
-
-// 7. Watchers
-
-// 8. Methods
 const getImageSrc = (image) => {
   if (!image) return "";
 
@@ -73,40 +62,126 @@ const getImageSrc = (image) => {
   return `data:image/*;base64,${image}`;
 };
 
+const revokePreviewIfBlob = (url) => {
+  if (url && typeof url === "string" && url.startsWith("blob:")) {
+    URL.revokeObjectURL(url);
+  }
+};
+
+const loadImage = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
+const canvasToBlob = (canvas, type, quality) => {
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), type, quality);
+  });
+};
+
+const compressImage = async (file) => {
+  if (!file || !file.type.startsWith("image/")) return file;
+
+  // png, jpg, jpeg, webp 등을 처리
+  // 너무 작은 파일이면 원본 유지
+  const maxOriginalSize = 1024 * 1024; // 1MB
+  const maxWidth = 1600;
+  const maxHeight = 1600;
+  const outputType = "image/jpeg";
+  const quality = 0.8;
+
+  if (file.size <= maxOriginalSize) {
+    return file;
+  }
+
+  const img = await loadImage(file);
+
+  let { width, height } = img;
+
+  if (width > maxWidth || height > maxHeight) {
+    const ratio = Math.min(maxWidth / width, maxHeight / height);
+    width = Math.round(width * ratio);
+    height = Math.round(height * ratio);
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(img, 0, 0, width, height);
+
+  const blob = await canvasToBlob(canvas, outputType, quality);
+
+  if (!blob) {
+    return file;
+  }
+
+  return new File(
+    [blob],
+    file.name.replace(/\.[^.]+$/, ".jpg"),
+    {
+      type: outputType,
+      lastModified: Date.now(),
+    }
+  );
+};
+
 const createPreview = (file, type) => {
   if (!file) return;
 
   const objectUrl = URL.createObjectURL(file);
 
   if (type === "detail") {
+    revokePreviewIfBlob(detailImagePreview.value);
     detailImageFile.value = file;
     detailImagePreview.value = objectUrl;
   }
 
   if (type === "action") {
+    revokePreviewIfBlob(actionImagePreview.value);
     actionImageFile.value = file;
     actionImagePreview.value = objectUrl;
   }
 };
 
-const onChangeActionImage = (e) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
+const onChangeActionImage = async (e) => {
+  try {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  createPreview(file, "action");
+    const compressedFile = await compressImage(file);
+
+    createPreview(compressedFile, "action");
+    isActionImageDeleted.value = false;
+
+    // 같은 파일 다시 선택해도 change 이벤트 타게 초기화
+    e.target.value = "";
+  } catch (error) {
+    console.error("image change error", error);
+    vm?.proxy?.$toast?.error("이미지 처리 중 오류가 발생했습니다.");
+  }
 };
 
 const onRemoveActionImage = () => {
-  if (actionImagePreview.value?.startsWith("blob:")) {
-    URL.revokeObjectURL(actionImagePreview.value);
-  }
+  revokePreviewIfBlob(actionImagePreview.value);
 
   actionImageFile.value = null;
   actionImagePreview.value = "";
   formData.value.actionImage = null;
   isActionImageDeleted.value = true;
 };
-
 
 const onSave = async () => {
   try {
@@ -125,7 +200,7 @@ const onSave = async () => {
 
     vm?.proxy?.$toast?.success("저장되었습니다.");
   } catch (error) {
-    console.error("save error", error?.response?.data);
+    console.error("save error", error?.response?.data || error);
     vm?.proxy?.$toast?.error("저장 중 오류가 발생했습니다.");
   }
 };
@@ -134,7 +209,6 @@ const onBack = () => {
   router.back();
 };
 
-// 9. Lifecycle hooks
 onMounted(() => {
   if (route.params.mbusiKey && route.params.detailKey) {
     refetchDetail();
@@ -142,13 +216,14 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  revokePreviewIfBlob(detailImagePreview.value);
+  revokePreviewIfBlob(actionImagePreview.value);
+
   queryClient.removeQueries({
     queryKey: ["detailhistory-detail", route.params.mbusiKey, route.params.detailKey],
     exact: true,
   });
 });
-
-// 10. Others
 </script>
 
 <template>
@@ -225,19 +300,18 @@ onUnmounted(() => {
               <input
                 type="file"
                 accept="image/*"
-                capture="environment"
                 @change="onChangeActionImage"
               />
             </label>
 
-            <label class="upload-button secondary">
+            <button
+              type="button"
+              class="upload-button secondary"
+              @click="onRemoveActionImage"
+            >
               파일 삭제
-              <input
-                type="danger"
-                accept="image/*"
-                @click="onRemoveActionImage"
-              />
-            </label>
+            </button>
+
             <dx-button
               text="저장"
               icon="save"
@@ -318,7 +392,7 @@ onUnmounted(() => {
 }
 
 .image-actions .dx-button {
-  margin-left: auto; /* 👉 저장 버튼만 오른쪽 */
+  margin-left: auto;
 }
 
 .upload-button {
@@ -329,6 +403,7 @@ onUnmounted(() => {
   height: 36px;
   padding: 0 14px;
   border-radius: 6px;
+  border: none;
   background: #337ab7;
   color: #fff;
   font-size: 13px;
