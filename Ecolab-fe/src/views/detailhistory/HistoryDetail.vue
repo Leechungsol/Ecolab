@@ -59,7 +59,7 @@ const getImageSrc = (image) => {
   if (typeof image !== "string") return "";
   if (image.startsWith("data:image")) return image;
   if (image.startsWith("blob:")) return image;
-  return `data:image/*;base64,${image}`;
+  return `data:image/jpeg;base64,${image}`;
 };
 
 const revokePreviewIfBlob = (url) => {
@@ -319,20 +319,10 @@ onUnmounted(() => {
           <div class="image-actions">
             <template v-if="isMobile">
               <label class="upload-button">
-                갤러리 선택
+                사진 촬영/선택
                 <input
                   type="file"
                   accept="image/*"
-                  @change="onChangeActionImage"
-                />
-              </label>
-
-              <label class="upload-button">
-                사진 촬영
-                <input
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
                   @change="onChangeActionImage"
                 />
               </label>

@@ -80,10 +80,10 @@ export class DetailHistoryRepository {
    */
   async saveActionImage(
     detailKey: number,
-    file: any,
+    imageBuffer: Buffer,
     userId = "business"
   ) {
-    if (!file) return null;
+    if (!imageBuffer) return null;
 
     const exists = await this.detailImageRepository.findOne({
       where: {
@@ -93,7 +93,7 @@ export class DetailHistoryRepository {
     });
 
     if (exists) {
-      exists.image = file.buffer;
+      exists.image = imageBuffer;
       exists.lastUpdateID = userId;
       exists.lastUpdateDtm = new Date();
 
@@ -102,7 +102,7 @@ export class DetailHistoryRepository {
 
     const newImage = this.detailImageRepository.create({
       detailKey,
-      image: file.buffer,
+      image: imageBuffer,
       imageType: "2",
       createID: userId,
       createDtm: new Date(),
@@ -111,7 +111,7 @@ export class DetailHistoryRepository {
     });
 
     return await this.detailImageRepository.save(newImage);
-  }
+}
 
   async deleteActionImage(detailKey: number) {
     const exists = await this.detailImageRepository.findOne({
