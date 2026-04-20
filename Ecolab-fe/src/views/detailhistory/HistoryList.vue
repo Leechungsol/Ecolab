@@ -226,6 +226,7 @@ onMounted(() => {
       <data-grid
         key-expr="detailKey"
         :data-source="store"
+        :show-column-lines="true"
         @on:toolbar-preparing="onToolbarPreparing"
       >
         <template #columns>

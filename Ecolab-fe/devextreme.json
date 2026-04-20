@@ -61,6 +61,13 @@
           "inputFile": "src/themes/contrast.json",
           "outputFile": "public/css/contrast.css"
         }
+      },
+      {
+        "command": "build-theme",
+        "options": {
+          "inputFile": "src/themes/teal.light.json",
+          "outputFile": "public/css/teal.light.css"
+        }
       }
     ]
   }

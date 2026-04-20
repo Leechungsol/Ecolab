@@ -6,6 +6,7 @@ import iconDarkViolet from "@/assets/icons/darkviolet.svg";
 import iconGreenMist from "@/assets/icons/greenmist.svg";
 import iconLight from "@/assets/icons/light.svg";
 import iconSoftBlue from "@/assets/icons/softblue.svg";
+import iconTealLight from "@/assets/icons/teallight.svg";
 
 export const THEME = {
   LIGHT: "generic.light",
@@ -16,6 +17,7 @@ export const THEME = {
   DARKVIOLET: "generic.darkviolet",
   GREENMIST: "generic.greenmist",
   CONTRAST: "generic.contrast",
+  TEALLIGHT: "material.teal.light",
 };
 
 export const THEME_OPTIONS = [
@@ -58,5 +60,10 @@ export const THEME_OPTIONS = [
     value: THEME.CONTRAST,
     label: "콘트라스트",
     icon: iconContrast,
+  },
+  {
+    value: THEME.TEALLLIGHT,
+    label: "틸 라이트",
+    icon: iconTealLight,
   },
 ];
