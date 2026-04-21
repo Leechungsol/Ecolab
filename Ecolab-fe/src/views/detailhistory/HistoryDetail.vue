@@ -4,7 +4,7 @@ import ContentBlock from "@/components/common/ContentBlock.vue";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { DxButton } from "devextreme-vue/button";
 import DxTextArea from "devextreme-vue/text-area";
-import { getCurrentInstance, nextTick, onMounted, onUnmounted, ref } from "vue";
+import { getCurrentInstance, onMounted, onUnmounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
@@ -21,7 +21,6 @@ const formData = ref({
   hasActionImage: false,
 });
 
-const actionTextAreaRef = ref(null);
 const actionImageFile = ref(null);
 const detailImagePreview = ref("");
 const actionImagePreview = ref("");
@@ -221,12 +220,9 @@ const onBack = () => {
   router.back();
 };
 
-onMounted(async () => {
+onMounted(() => {
   if (route.params.mbusiKey && route.params.detailKey) {
-    await refetchDetail();
-    nextTick(() => {
-      actionTextAreaRef.value?.instance?.focus();
-    });
+    refetchDetail();
   }
 });
 
@@ -285,7 +281,6 @@ onUnmounted(() => {
     <content-block title="조치 내용">
       <div class="detail-section">
         <dx-text-area
-          ref="actionTextAreaRef"
           v-model:value="formData.actionContents"
           :height="180"
           placeholder="조치 내용을 입력하세요."
