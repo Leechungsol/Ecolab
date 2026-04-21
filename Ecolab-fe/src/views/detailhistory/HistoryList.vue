@@ -15,9 +15,9 @@ import {
   DxRequiredRule,
 } from "devextreme-vue/form";
 import DxLoadIndicator from "devextreme-vue/load-indicator";
-import { DxButton, DxColumn } from "devextreme-vue/data-grid";
+import { DxColumn } from "devextreme-vue/data-grid";
 import DataSource from "devextreme/data/data_source";
-import { computed, getCurrentInstance, onMounted, reactive, ref } from "vue";
+import { computed, getCurrentInstance, nextTick, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 // 2. Hooks
@@ -34,6 +34,7 @@ const authStorageKey = `business-history-auth-${busiKey}-${checkYm}`;
 
 const isAuthenticated = ref(false);
 const mbusiKey = ref(null);
+const loginForm = ref(null);
 
 const formData = reactive({
   reportMatch4: "",
@@ -141,30 +142,35 @@ const onSubmit = async () => {
   login();
 };
 
-const onDetail = (e) => {
-  if (e.row?.data?.detailKey) {
-    router.push({
-      name: "HistoryDetail",
-      params: {
-        mbusiKey: mbusiKey.value,
-        detailKey: e.row.data.detailKey,
-      },
-    });
-  }
+const navigateToDetail = (detailKey) => {
+  if (!detailKey) return;
+  router.push({
+    name: "HistoryDetail",
+    params: { mbusiKey: mbusiKey.value, detailKey },
+  });
 };
+
+const onRowClick = (e) => {
+  navigateToDetail(e.data?.detailKey);
+};
+
 
 // 9. Lifecycle hooks
 onMounted(() => {
   const saved = sessionStorage.getItem(authStorageKey);
 
-  if (!saved) return;
-
-  const parsed = JSON.parse(saved);
-
-  if (parsed?.isAuthenticated) {
-    isAuthenticated.value = true;
-    mbusiKey.value = parsed.mbusiKey;
+  if (saved) {
+    const parsed = JSON.parse(saved);
+    if (parsed?.isAuthenticated) {
+      isAuthenticated.value = true;
+      mbusiKey.value = parsed.mbusiKey;
+      return;
+    }
   }
+
+  nextTick(() => {
+    loginForm.value?.instance?.getEditor("reportMatch4")?.focus();
+  });
 });
 
 // 10. Others
@@ -188,6 +194,7 @@ onMounted(() => {
           </div>
 
           <dx-form
+            ref="loginForm"
             label-location="top"
             :form-data="formData"
             :disabled="isPending"
@@ -244,14 +251,18 @@ onMounted(() => {
         :show-column-lines="true"
         :show-filter="false"
         @on:toolbar-preparing="onToolbarPreparing"
+        @row-click="onRowClick"
       >
         <template #columns>
-          <dx-column type="buttons">
-            <dx-button
-              icon="info"
-              @click="onDetail"
-            />
-          </dx-column>
+          <dx-column
+            caption=""
+            css-class="arrow-col"
+            :width="28"
+            :min-width="28"
+            :allow-sorting="false"
+            :allow-filtering="false"
+            :calculate-cell-value="() => '›'"
+          />
 
           <dx-column
             data-field="detailContents"
@@ -369,6 +380,27 @@ onMounted(() => {
   margin: 0;
   font-weight: bold;
   color: var(--dx-color-primary);
+}
+
+:deep(.dx-data-row) {
+  cursor: pointer;
+
+  &:hover td {
+    background-color: rgba(0, 150, 136, 0.06) !important;
+  }
+
+  td {
+    white-space: pre-line !important;
+  }
+}
+
+:deep(.dx-data-row .arrow-col) {
+  color: #009688 !important;
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center !important;
+  padding: 0 !important;
+  line-height: 1;
 }
 
 @media (max-width: 768px) {

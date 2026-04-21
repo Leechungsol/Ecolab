@@ -252,11 +252,22 @@ const customizeColumns = (columns) => {
   }
 }
 
+:deep(.dx-datagrid-headers) {
+  background-color: var(--dx-color-primary);
+}
+
+:deep(.dx-data-row) {
+  td {
+    border-right: 1px solid #d6e4e2 !important;
+  }
+}
+
 :deep(.dx-header-row) {
   td {
     background-color: var(--dx-color-primary);
     color: var(--dx-color-main-bg);
     text-align: center !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.25) !important;
   }
 }
 </style>
