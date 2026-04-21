@@ -238,11 +238,12 @@ onUnmounted(() => {
 
 <template>
   <div class="wrapper-content">
-    <div class="top-actions">
+    <div class="detail-topbar">
       <dx-button
-        text="뒤로"
+        text="목록으로"
         icon="chevronleft"
-        styling-mode="outlined"
+        styling-mode="text"
+        class="back-button"
         @click="onBack"
       />
     </div>
@@ -342,10 +343,18 @@ onUnmounted(() => {
   gap: 20px;
 }
 
-.top-actions {
+.detail-topbar {
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
+  align-items: center;
+  gap: 4px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 6px 12px 6px 6px;
+  box-shadow: 0 1px 4px rgba(0, 150, 136, 0.08), 0 0 0 1px rgba(0,150,136,0.08);
+}
+
+.back-button {
+  color: #009688 !important;
 }
 
 .detail-section {
@@ -357,12 +366,38 @@ onUnmounted(() => {
 .image-section {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 12px;
 }
 
+.image-preview,
+.image-empty,
+.image-actions {
+  width: 100%;
+}
+
 .image-title {
-  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
   font-weight: 600;
+  color: #00796b;
+  background: rgba(0, 150, 136, 0.08);
+  border: 1px solid rgba(0, 150, 136, 0.2);
+  border-radius: 20px;
+  padding: 3px 10px 3px 8px;
+  align-self: flex-start;
+
+  &::before {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: #009688;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
 }
 
 .image-preview {
@@ -414,17 +449,27 @@ onUnmounted(() => {
   padding: 0 14px;
   border-radius: 6px;
   border: none;
-  background: #337ab7;
+  background: #009688;
   color: #fff;
   font-size: 13px;
   cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #00796b;
+  }
 
   input {
     display: none;
   }
 
   &.secondary {
-    background: #6c757d;
+    background: #b2bec3;
+
+    &:hover {
+      background: #8ea0a6;
+    }
   }
 }
 </style>
